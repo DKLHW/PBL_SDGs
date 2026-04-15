@@ -44,30 +44,44 @@
     .tab-btn.active { color: #fff; border-bottom-color: var(--accent-bright); }
 
     main { max-width: 600px; margin: 0 auto; padding: 20px 16px 60px; }
+
     .restaurant-bar { background: var(--navy); color: #fff; padding: 14px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
-    .r-icon { font-size: 22px; line-height: 1; }
+    .r-logo-text {
+      width: 44px; height: 44px; background: var(--navy-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+      letter-spacing: -0.5px; text-align: center; line-height: 1.3;
+      flex-shrink: 0;
+    }
     .r-name { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
     .r-type-badge { font-size: 10px; padding: 2px 8px; background: var(--accent); color: #fff; font-weight: 700; margin-left: auto; letter-spacing: 0.05em; }
 
     .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
 
     .menu-card { background: var(--surface); border: 1px solid var(--border); margin-bottom: 12px; }
-    .menu-card-header { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; transition: background 0.1s; }
+    .menu-card-header { display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer; user-select: none; transition: background 0.1s; }
     .menu-card-header:hover { background: #f7f9fd; }
-    .menu-card-header.open { background: #f0f4fc; }
+    .menu-card-header.open { background: #f0f4fc; border-bottom: 1px solid var(--border); }
+    .menu-logo-text {
+      width: 40px; height: 40px; background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #fff;
+      letter-spacing: -0.3px; text-align: center; line-height: 1.3;
+      flex-shrink: 0;
+    }
     .menu-card-left { flex: 1; }
     .menu-card-name { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
     .popular-badge { display: inline-flex; align-items: center; gap: 3px; background: var(--popular); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; letter-spacing: 0.04em; }
-    .menu-card-meta { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+    .menu-card-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
     .menu-card-price { font-size: 14px; font-weight: 700; color: var(--navy); }
     .menu-mini-star { font-size: 12px; color: var(--star-off); }
     .menu-mini-star.on { color: var(--star-on); }
     .menu-avg-text { font-size: 11px; color: var(--text-muted); }
     .menu-review-count { font-size: 11px; color: var(--text-light); }
-    .menu-chevron { font-size: 12px; color: var(--text-light); transition: transform 0.2s; }
+    .menu-chevron { font-size: 12px; color: var(--text-light); transition: transform 0.2s; margin-left: 4px; }
     .menu-chevron.open { transform: rotate(180deg); }
 
-    .review-panel { display: none; padding: 14px; border-top: 1px solid var(--border); background: #fafbfd; }
+    .review-panel { display: none; padding: 14px; background: #fafbfd; }
     .review-panel.open { display: block; }
 
     .review-stars-row { display: flex; align-items: center; gap: 3px; margin-bottom: 10px; }
@@ -137,30 +151,74 @@
 <div id="toast"></div>
 
 <script>
+  const STORAGE_KEY = 'dku_cafeteria_reviews_v1';
+
   const restaurants = {
-    gwang:    { name: '광뚝',    icon: '🍖', type: '한식', menus: [
+    gwang:    { name: '광뚝',    abbr: '광뚝', type: '한식', menus: [
       { id: 'gwang_1', name: '고추장불고기', price: 6900, popular: false }
     ]},
-    jungshik: { name: '중식대장', icon: '🍜', type: '중식', menus: [
+    jungshik: { name: '중식대장', abbr: '중식\n대장', type: '중식', menus: [
       { id: 'jung_1',  name: '크림짬뽕',    price: 7900, popular: true  }
     ]},
-    bbokka:   { name: '뽀까뽀까', icon: '🍱', type: '분식', menus: [] },
-    pokpung:  { name: '폭풍분식', icon: '🌮', type: '분식', menus: [] },
-    guk51:    { name: '51장국밥', icon: '🍲', type: '한식', menus: [] },
-    gapjji:   { name: '값찌개',   icon: '🫕', type: '한식', menus: [] },
-    katsu:    { name: '경성카츠', icon: '🍛', type: '일식', menus: [] },
-    barbie:   { name: '바비든든', icon: '🥩', type: '양식', menus: [] },
-    bibigo:   { name: '비비고고', icon: '🥗', type: '한식', menus: [] },
-    popo:     { name: '포포420',  icon: '🌯', type: '퓨전', menus: [] },
+    bbokka:   { name: '뽀까뽀까', abbr: '뽀까\n뽀까', type: '분식', menus: [
+      { id: 'bbokka_1', name: '참치김치볶음밥', price: 0, popular: false }
+    ]},
+    pokpung:  { name: '폭풍분식', abbr: '폭풍\n분식', type: '분식', menus: [
+      { id: 'pokpung_1', name: '폭풍라면', price: 0, popular: false }
+    ]},
+    guk51:    { name: '51장국밥', abbr: '51\n장국밥', type: '한식', menus: [
+      { id: 'guk51_1', name: '순대국밥', price: 0, popular: false }
+    ]},
+    gapjji:   { name: '값찌개',   abbr: '값찌개', type: '한식', menus: [
+      { id: 'gapjji_1', name: '순두부찌개', price: 0, popular: false }
+    ]},
+    katsu:    { name: '경성카츠', abbr: '경성\n카츠', type: '일식', menus: [
+      { id: 'katsu_1', name: '고구마치즈돈가스', price: 0, popular: false }
+    ]},
+    barbie:   { name: '바비든든', abbr: '바비\n든든', type: '양식', menus: [] },
+    bibigo:   { name: '비비고고', abbr: '비비\n고고', type: '한식', menus: [
+      { id: 'bibigo_1', name: '치킨마요덮밥', price: 0, popular: false }
+    ]},
+    popo:     { name: '포포420',  abbr: '포포\n420', type: '퓨전', menus: [
+      { id: 'popo_1', name: '마라우삼겹쌀국수', price: 0, popular: false }
+    ]},
   };
 
+  // localStorage에서 리뷰 불러오기
+  function loadReviews() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch(e) { return {}; }
+  }
+
+  // localStorage에 리뷰 저장
+  function saveReviews() {
+    try {
+      const data = {};
+      Object.keys(menuData).forEach(mid => {
+        data[mid] = menuData[mid].reviews;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch(e) {}
+  }
+
+  // 메뉴 데이터 초기화 (sel, open은 세션용 / reviews는 localStorage)
+  const savedReviews = loadReviews();
   const menuData = {};
   Object.values(restaurants).forEach(r =>
-    r.menus.forEach(m => menuData[m.id] = { sel: 0, open: false, reviews: [] })
+    r.menus.forEach(m => {
+      menuData[m.id] = {
+        sel: 0,
+        open: false,
+        reviews: savedReviews[m.id] || []
+      };
+    })
   );
 
   let current = 'gwang';
 
+  // 날짜
   const d = new Date();
   const days = ['일','월','화','수','목','금','토'];
   document.getElementById('header-date').innerHTML =
@@ -170,6 +228,13 @@
     const rv = menuData[mid].reviews;
     if (!rv.length) return null;
     return rv.reduce((a,b)=>a+b.score,0)/rv.length;
+  }
+
+  // 메뉴 이름을 짧은 로고 텍스트로 변환 (2~4글자)
+  function menuAbbr(name) {
+    if (name.length <= 4) return name;
+    // 앞 2글자 + 줄바꿈 + 다음 2글자
+    return name.slice(0,2) + '\n' + name.slice(2,4);
   }
 
   function renderMenuCard(rid, m) {
@@ -185,8 +250,13 @@
       ? '<span style="display:flex;gap:1px">'+miniStars+'</span><span class="menu-avg-text">'+avg.toFixed(1)+'점</span><span class="menu-review-count">('+cnt+'개 리뷰)</span>'
       : '<span class="menu-review-count">아직 리뷰 없음</span>';
 
+    const priceHTML = m.price > 0 ? '<span class="menu-card-price">'+m.price.toLocaleString()+'원</span>' : '';
+
     const starsInput = Array.from({length:5},(_,i)=>
-      '<span class="r-star'+(md.sel>i?' active':'')+'" onclick="clickMenuStar(\''+m.id+'\','+( i+1)+')">★</span>').join('');
+      '<span class="r-star'+(md.sel>i?' active':'')+'" onclick="clickMenuStar(\''+m.id+'\','+(i+1)+')">★</span>').join('');
+
+    const abbrLines = menuAbbr(m.name).split('\n');
+    const abbrHTML = abbrLines.join('<br>');
 
     let reviewsHTML = '';
     if (md.reviews.length > 0) {
@@ -196,7 +266,7 @@
           '<span style="display:flex;gap:1px">'+Array.from({length:5},(_,i)=>'<span class="review-item-star'+(i<rv.score?' on':'')+'">★</span>').join('')+'</span>'+
           '<span class="review-item-score">'+rv.score+'점</span>'+
           '<span class="review-item-time">'+rv.time+'</span></div>'+
-          (rv.comment ? '<div class="review-item-comment">'+rv.comment+'</div>' : '')+
+          (rv.comment ? '<div class="review-item-comment">'+escapeHTML(rv.comment)+'</div>' : '')+
           '</div>').join('');
     } else {
       reviewsHTML = '<div class="reviews-divider"></div><div class="no-reviews">첫 번째 리뷰를 남겨보세요!</div>';
@@ -204,9 +274,10 @@
 
     return '<div class="menu-card" id="card-'+m.id+'">'+
       '<div class="menu-card-header'+(isOpen?' open':'')+'" onclick="toggleMenu(\''+rid+'\',\''+m.id+'\')">'+
+        '<div class="menu-logo-text">'+abbrHTML+'</div>'+
         '<div class="menu-card-left">'+
-          '<div class="menu-card-name">'+m.name+' '+popularHTML+'</div>'+
-          '<div class="menu-card-meta"><span class="menu-card-price">'+m.price.toLocaleString()+'원</span>'+metaHTML+'</div>'+
+          '<div class="menu-card-name">'+escapeHTML(m.name)+' '+popularHTML+'</div>'+
+          '<div class="menu-card-meta">'+priceHTML+metaHTML+'</div>'+
         '</div>'+
         '<span class="menu-chevron'+(isOpen?' open':'')+'">▼</span>'+
       '</div>'+
@@ -221,15 +292,22 @@
     '</div>';
   }
 
+  function escapeHTML(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   function render(rid) {
     const r = restaurants[rid];
     const bodyHTML = r.menus.length === 0
       ? '<div class="no-menu"><span class="no-icon">📋</span>메뉴 정보가 아직 없습니다</div>'
       : r.menus.map(m => renderMenuCard(rid, m)).join('');
 
+    const abbrLines = r.abbr.split('\n');
+    const abbrHTML = abbrLines.join('<br>');
+
     document.getElementById('main-content').innerHTML =
       '<div class="restaurant-bar">'+
-        '<span class="r-icon">'+r.icon+'</span>'+
+        '<div class="r-logo-text">'+abbrHTML+'</div>'+
         '<span class="r-name">'+r.name+'</span>'+
         '<span class="r-type-badge">'+r.type+'</span>'+
       '</div>'+
@@ -266,8 +344,9 @@
     const time = (now.getMonth()+1)+'/'+now.getDate()+' '+
       String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
     md.reviews.push({ score: md.sel, comment, time });
+    saveReviews(); // localStorage에 저장
     const menuName = restaurants[rid].menus.find(m=>m.id===mid)?.name || '';
-    showToast(menuName+' 리뷰 등록 완료!');
+    showToast(menuName+' 리뷰 등록 완료! 저장됨 ✓');
     md.sel = 0;
     render(rid);
   }
